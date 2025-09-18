@@ -1,0 +1,92 @@
+.register-container {
+    padding: 0.3em;
+    border: 0.5em dashed;
+    border-radius: 1em;
+    background: linear-gradient(90deg, rgba(100, 100, 100, 0.1), rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0.1));
+    animation: borderanimation 1.5s infinite alternate-reverse;
+}
+
+@keyframes borderanimation {
+    0% {
+        border-color: rgba(200, 200, 0, 0.25);
+    }
+
+    100% {
+        border-color: rgba(0, 200, 200, 0.25);
+    }
+}
+
+a {
+    color: rgb(150, 150, 150);
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: rgb(0, 150, 150);
+}
+
+.error-message {
+    color: rgb(150, 150, 150);
+    font-size: 0.9em;
+    padding: 0.1em;
+    font-family: Arial, sans-serif;
+    font-weight: 100;
+    border-radius: 1em;
+    box-shadow: 0 0 0.7em rgba(150, 50, 50, 0.5);
+    background-color: rgba(150, 50, 50, 0.5);
+}
+
+.register-label-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1em;
+    margin: 0.1em;
+}
+
+input {
+    border-radius: 0.5em;
+    border: 0.15em inset rgb(100, 100, 100);
+    background-color: rgba(0, 0, 0, 0);
+    color: rgb(150, 150, 150);
+    padding: 0.1em 0.3em;
+    margin: 0.1em;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: rgb(0, 150, 150);
+    box-shadow: 0 0 0.5em rgb(0, 150, 150);
+}
+
+.label-group {
+    display: flex;
+    width: 12em;
+    flex-direction: column;
+}
+
+.checkbox-group {
+    display: contents;
+}
+
+button {
+    border: 0.15em outset rgb(100, 100, 100);
+    border-radius: 0.5em;
+    background-color: rgba(0, 0, 0, 0);
+    color: rgb(150, 150, 150);
+    width: 11em;
+    padding: 0.1em 0.3em;
+    margin: 0.1em;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    border-color: rgb(0, 150, 150);
+    box-shadow: 0 0 0.5em rgb(0, 150, 150);
+}
+
+.register-title {
+    font-size: 1.2em;
+    font-weight: 1000;
+}

@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: rgb(5, 0, 5);
+  color: rgb(150, 150, 150);
+}
+
+footer {
+  position: fixed;
+  bottom: 0.2em;
+}
+
+#starslayer {
+  position: fixed;
+  z-index: -1000;
+  top: -100%;
+  left: -100%;
+  bottom: -100%;
+  right: -100%;
+  background-image: url(../img/Stars.png);
+  background-size: 20%;
+  overflow: hidden;
+  animation: rotating-stars 500s infinite linear;
+}
+
+@keyframes rotating-stars {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
