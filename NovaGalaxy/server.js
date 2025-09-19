@@ -54,7 +54,7 @@ app.post('/api/register', async (req, res) => {
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server-Fehler');
+        res.status(500).json({ msg: 'Server-Fehler.'});
     }
 });
 

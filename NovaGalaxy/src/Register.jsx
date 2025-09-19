@@ -47,7 +47,7 @@ const Register = ({onBackToLogin}) => {
         });
         const data = await response.json();
         if(response.ok){
-          console.log('Registrierung erfolgreich!');
+          onBackToLogin();
         } else {
           setServerError(data.msg || 'Registrierung fehlgeschlagen!');
         }
