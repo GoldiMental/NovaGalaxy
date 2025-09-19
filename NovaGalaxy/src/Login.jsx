@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { API_URL } from './dev.jsx';
+import { useAuth } from './authContext.jsx';
 import './Styles/Login.css'
 
-const Login = ({onCreateAccount}) => {
+const Login = ({onCreateAccount, onForgotPassword}) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState('');
 
+  const {login} = useAuth();
   const handleUsernameOrEmailChange = (event) => {setUsernameOrEmail(event.target.value);};
   const handlePasswordChange = (event) => {setPassword(event.target.value);};
 
@@ -27,26 +28,13 @@ const Login = ({onCreateAccount}) => {
     //Server-Communication
     if(Object.keys(validationErrors).length === 0) {
       setLoading(true);
-      try {
-        const response = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usernameOrEmail, password }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          console.log('Login erfolgreich!', data.msg);
-        } else {
-          setServerError(data.msg || 'Login fehlgeschlagen.');
-        }
-      } catch (error) {
-        console.error('Fetch-Fehler:', error);
-        setServerError('Netzwerkfehler. Bitte versuchen Sie es später erneut.');
-      } finally {
-        setLoading(false);
+      const result = await login(usernameOrEmail, password);
+      if (!result.success) {
+        setServerError(result.msg);
+      } else {
+        console.log('Login erfolgreich!');
       }
+      setLoading(false);
     }
   };
 
@@ -70,7 +58,7 @@ const Login = ({onCreateAccount}) => {
         {serverError && <p className='error-message'>{serverError}</p>}
         <button type='submit'>Einloggen</button>
       </form>
-      <button type='button'>Passwort?</button>
+      <button type='button' onClick={onForgotPassword}>Passwort?</button>
       <button type='button' onClick={onCreateAccount}>Registrieren</button>
     </div>
   );
