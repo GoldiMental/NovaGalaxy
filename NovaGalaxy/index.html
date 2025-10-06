@@ -4,14 +4,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="./src/Styles/index.css"></script>
+  <script src="https://unpkg.com/amazon-cognito-identity-js@latest/dist/amazon-cognito-identity.min.js"></script>
   <title>Nova Galaxy®</title>
 </head>
 
-<body>
+<body class="bg-gray-100 antialiased">
   <div id="starslayer"></div>
   <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-  <footer>&copy; 2025 GoldiMental Entertainment - Alle Rechte vorbehalten</footer>
+  <script type="module" src="/src/app.jsx"></script>
+  <footer class="text-center text-xs text-gray-500 p-4 absolute bottom-0 w-full">
+    &copy; 2025 GoldiMental Entertainment - Alle Rechte vorbehalten
+  </footer>
 </body>
 
 </html>

@@ -1,21 +1,26 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { API_URL } from './dev.jsx';
 
 const AuthContext = createContext(null);
+const TOKEN_KEY = 'novaGalaxyJWT'; 
+const API_URL = "https://a8mol3jod5.execute-api.eu-central-1.amazonaws.com/api"; 
+
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
     if (token) {
       setUser({ token });
     }
     setLoading(false);
+    return () => {}; 
   }, []); 
+
   const login = async (usernameOrEmail, password) => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/login`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ usernameOrEmail, password }),
@@ -24,13 +29,11 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        console.log('Token LocalStorage:', data.token);
-        setUser({ token: data.token });
-        console.log('userstate:', {token:data.token});
+        localStorage.setItem(TOKEN_KEY, data.token);
+        setUser({ token: data.token }); 
         return { success: true };
       } else {
-        return { success: false, msg: data.msg };
+        return { success: false, msg: data.msg || 'Anmeldung fehlgeschlagen.' };
       }
     } catch (error) {
       console.error('Login-Fehler:', error);
@@ -39,7 +42,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
     setUser(null);
   };
 

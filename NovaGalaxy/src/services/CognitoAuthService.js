@@ -1,96 +1,70 @@
-import { 
-    CognitoIdentityProviderClient, 
-    InitiateAuthCommand,
-    RespondToAuthChallengeCommand
-} from "@aws-sdk/client-cognito-identity-provider";
+// COGNITO BROWSER POLYFILL (Fixes 'global is not defined' for local environments if needed)
+if (typeof global === 'undefined' && typeof window !== 'undefined') {
+    window.global = window;
+}
 
-const REGION = "eu-central-1";
+const poolData = {
+    UserPoolId: 'eu-central-1_sgQ0H9nFq', 
+    ClientId: '2tqi077p0itj85755if4shfsd5'
+};
 
-const USER_POOL_ID = "eu-central-1_sgQ0H9nFq";
-const CLIENT_ID = "2tqi077p0itj85755if4shfsd5";
+// Globale SDK-Variablen
+// Diese sollten über einen NPM-Import geladen werden, aber wir halten uns an die window-Zugriffsmethode für Konsistenz
+const CognitoUserPool = window.CognitoUserPool;
+const CognitoUser = window.CognitoUser;
+const AuthenticationDetails = window.AuthenticationDetails;
 
-const cognitoClient = new CognitoIdentityProviderClient({ region: REGION });
-
-/**
- * Führt den Benutzer-Login über AWS Cognito durch.
- * @param {string} username - Der Benutzername.
- * @param {string} password - Das Passwort.
- * @returns {Promise<string>} Das JWT (Access Token).
- */
-export const loginUser = async (username, password) => {
-    try {
-        const params = {
-            AuthFlow: "USER_PASSWORD_AUTH",
-            ClientId: CLIENT_ID,
-            AuthParameters: {
-                USERNAME: username,
-                PASSWORD: password,
-            },
-        };
-
-        const command = new InitiateAuthCommand(params);
-        const response = await cognitoClient.send(command);
-
-        if (response.AuthenticationResult && response.AuthenticationResult.AccessToken) {
-            
-            sessionStorage.setItem('accessToken', response.AuthenticationResult.AccessToken);
-            sessionStorage.setItem('idToken', response.AuthenticationResult.IdToken);
-            
-            console.log("Login erfolgreich, JWT erhalten.");
-            return response.AuthenticationResult.AccessToken;
+export class CognitoAuthService {
+    constructor() {
+        if (!CognitoUserPool) {
+            console.error("Cognito SDK nicht geladen. Auth wird fehlschlagen.");
+            this.isSDKLoaded = false;
         } else {
-            throw new Error("Fehler beim Login: Keine direkten Authentifizierungsergebnisse.");
+             this.userPool = new CognitoUserPool(poolData);
+             this.isSDKLoaded = true;
         }
-
-    } catch (error) {
-        console.error("Cognito Login Fehler:", error);
-        throw new Error(error.message || "Anmeldung fehlgeschlagen.");
-    }
-};
-
-/**
- * Ruft den im Session Storage gespeicherten JWT Access Token ab.
- * @returns {string | null} Der JWT Access Token oder null.
- */
-export const getAuthToken = () => {
-    return sessionStorage.getItem('accessToken');
-};
-
-/**
- * Entfernt die Tokens aus dem Session Storage (simuliert den Logout).
- */
-export const logoutUser = () => {
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('idToken');
-    // Hinweis: Die eigentliche Invalidation des Tokens muss auf dem Backend erfolgen,
-    // aber das Löschen des Tokens auf Client-Seite beendet die Session.
-};
-
-const API_BASE_URL = "https://a8mol3jod5.execute-api.eu-central-1.amazonaws.com";
-
-/**
- * Ruft die geschützten Benutzerdaten vom API Gateway ab.
- */
-export const fetchProtectedUserData = async () => {
-    const token = getAuthToken();
-    
-    if (!token) {
-        throw new Error("Nicht autorisiert. Bitte melden Sie sich an.");
-    }
-    
-    // Das Token wird im Authorization Header gesendet
-    const response = await fetch(`${API_BASE_URL}/api/protected/user`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`, 
-            'Content-Type': 'application/json',
-        },
-    });
-    
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Abruf fehlgeschlagen: ${response.status} - ${errorData.msg || 'Token ungültig/abgelaufen'}`);
     }
 
-    return response.json();
+    async signIn(username, password) {
+        if (!this.isSDKLoaded) throw new Error("Cognito SDK nicht verfügbar.");
+
+        return new Promise((resolve, reject) => {
+            const authenticationDetails = new AuthenticationDetails({ Username: username, Password: password });
+            const cognitoUser = new CognitoUser({ Username: username, Pool: this.userPool });
+
+            cognitoUser.authenticateUser(authenticationDetails, {
+                onSuccess: (session) => {
+                    resolve({ idToken: session.getIdToken().getJwtToken() });
+                },
+                onFailure: (err) => reject(err),
+            });
+        });
+    }
+
+    getIdToken() {
+        if (!this.isSDKLoaded || !this.userPool) return Promise.resolve(null);
+        
+        return new Promise((resolve) => {
+            const cognitoUser = this.userPool.getCurrentUser();
+            if (!cognitoUser) return resolve(null);
+            
+            cognitoUser.getSession((err, session) => {
+                if (err || !session || !session.isValid()) {
+                    return resolve(null);
+                }
+                resolve(session.getIdToken().getJwtToken());
+            });
+        });
+    }
+
+    signOut() {
+        if (this.userPool) {
+             const cognitoUser = this.userPool.getCurrentUser();
+             if (cognitoUser) cognitoUser.signOut();
+        }
+    }
+
+    getPoolData() {
+        return poolData;
+    }
 };
