@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { API_URL } from './dev.jsx';
 import './Styles/Register.css';
 
 const Register = ({onBackToLogin}) => {
@@ -40,7 +39,7 @@ const Register = ({onBackToLogin}) => {
     if(Object.keys(validationErrors).length === 0) {
       setLoading(true);
       try {
-        const response = await fetch(API_URL+'/register', {
+        const response = await fetch('https://a8mol3jod5.execute-api.eu-central-1.amazonaws.com/api/register', {
           method: 'POST',
           headers: {'Content-Type': 'application/json',},
           body: JSON.stringify({username, email, password, agreedToAGB, agreedToDSE,}),
