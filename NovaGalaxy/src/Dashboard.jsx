@@ -11,7 +11,9 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        if (!user || !user.token) {
+        const token = user?.token || sessionStorage.getItem('novaGalaxyJWT');
+
+        if (!token) {
           setError('Nicht authentifiziert. Kein Token gefunden.');
           setLoading(false);
           return;
@@ -21,7 +23,7 @@ const Dashboard = () => {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'x-auth-token': user.token,
+            'Authorization': token,
           },
         });
 
@@ -29,8 +31,12 @@ const Dashboard = () => {
           const data = await response.json();
           setUserData(data);
         } else {
-          const errData = await response.json();
-          setError(errData.msg || 'Fehler beim Abrufen der Daten.');
+          if (response.status === 401) {
+            setError('Autorisierung fehlgeschlagen. Token ungültig oder abgelaufen (401).');
+          } else {
+            const errData = await response.json();
+            setError(errData.msg || `Fehler beim Abrufen der Daten. Status: ${response.status}`);
+          }
         }
       } catch (err) {
         console.error('Fetch-Fehler:', err);
@@ -50,13 +56,26 @@ const Dashboard = () => {
   if (error) {
     return <p className="error-message">Fehler: {error}</p>;
   }
-  
+
   return (
-    <div>
-      <h2>Willkommen im Dashboard!</h2>
-      <p>Ihre Benutzer-ID: {userData ? userData._id : 'Unbekannt'}</p>
-      <p>Ihr Benutzername: {userData ? userData.username : 'Unbekannt'}</p>
-      <p>Ihre E-Mail: {userData ? userData.email : 'Unbekannt'}</p>
+    <div className="p-8 max-w-lg mx-auto bg-gray-800 text-white rounded-xl shadow-2xl mt-10">
+      <h2 className="text-3xl font-bold mb-4 border-b border-gray-700 pb-2">Willkommen im Nova Galaxy Dashboard!</h2>
+      {userData ? (
+        <div className="space-y-3">
+          <p className="text-lg">
+            **Benutzer-ID:** <span className="font-mono text-sm bg-gray-700 p-1 rounded">{userData._id}</span>
+          </p>
+          <p className="text-lg">
+            **Benutzername:** <span className="text-yellow-400 font-semibold">{userData.username}</span>
+          </p>
+          <p className="text-lg">
+            **E-Mail:** <span>{userData.email}</span>
+          </p>
+          <p className="text-green-400 mt-4">**Status:** Geschützte Daten erfolgreich aus der MongoDB abgerufen!</p>
+        </div>
+      ) : (
+        <p>Daten werden geladen oder sind nicht verfügbar.</p>
+      )}
     </div>
   );
 };

@@ -1,0 +1,9 @@
+{
+  "name": "lambda-register",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Handles GetUserData in MongoDB.",
+  "dependencies": {
+    "mongoose": "^8.0.0"
+  }
+}
